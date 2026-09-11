@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kavinayah Industries — Billing</title>
+<title>JK Hardwares — Billing</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -206,9 +206,9 @@
 <div class="app">
   <div class="sidebar">
     <div class="brand">
-      <div class="kmark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 3v18M4 12l10-9M4 12l10 9" stroke="#122A44" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="kmark"><img src="./icon-192.png" style="width:100%;height:100%;object-fit:contain;border-radius:7px"></div>
       <div class="brand-text">
-        <div class="name">KAVINAYAH<br>INDUSTRIES</div>
+        <div class="name">JK<br>HARDWARES</div>
         <div class="sub">BILLING</div>
       </div>
     </div>
@@ -221,7 +221,7 @@
       <div class="nav-item" data-view="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="5" width="3" height="13"/></svg>Reports</div>
       <div class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Settings</div>
     </div>
-    <div class="nav-foot">531, Onthapillai Kaadu<br>Near Kaliamman Kovil<br>Kitchipalayam, Salem-15</div>
+    <div class="nav-foot" id="navFootAddress"></div>
   </div>
 
   <div class="main" id="main">
@@ -235,7 +235,7 @@
 
 <script>
 /* ---------------- Storage helpers ---------------- */
-const KEYS = { settings:'kavinayah:settings', customers:'kavinayah:customers', products:'kavinayah:products', invoices:'kavinayah:invoices' };
+const KEYS = { settings:'jkhardwares:settings', customers:'jkhardwares:customers', products:'jkhardwares:products', invoices:'jkhardwares:invoices' };
 
 /* Deployed version: uses the browser's own localStorage.
    Data lives only in this browser on this device — see chat for backup/multi-device notes. */
@@ -254,28 +254,23 @@ let DB = { settings:null, customers:[], products:[], invoices:[] };
 let view = 'dashboard';
 
 const defaultSettings = {
-  companyName:'KAVINAYAH INDUSTRIES',
-  tagline:'MANUFACTURERS OF UPVC WINDOWS | DOORS | PARTITIONS',
-  proprietor:'S. MOHANRAJ',
-  phone:'73392 85291',
-  address:'531, Onthapillai Kaadu, Near Kaliamman Kovil, Kitchipalayam, Salem-15',
+  companyName:'JK HARDWARES',
+  tagline:'WINDOW & DOOR HARDWARE SUPPLIERS',
+  proprietor:'',
+  phone:'',
+  address:'',
   gstin:'',
-  state:'Tamil Nadu',
-  stateCode:'33',
+  state:'',
+  stateCode:'',
   cgstRate:9,
   sgstRate:9,
   invoiceCounter:1,
-  invoicePrefix:'KI',
+  invoicePrefix:'JK',
   cloudBackupUrl:'',
   lastBackupAt:null
 };
 
-const defaultProducts = [
-  {id:cryptoId(), name:'UPVC Sliding Window (2-track)', hsn:'3925', unit:'sq.ft', rate:320, stock:0, lowStock:10},
-  {id:cryptoId(), name:'UPVC Casement Window', hsn:'3925', unit:'sq.ft', rate:380, stock:0, lowStock:10},
-  {id:cryptoId(), name:'UPVC Main Door', hsn:'3925', unit:'sq.ft', rate:450, stock:0, lowStock:5},
-  {id:cryptoId(), name:'UPVC Partition Panel', hsn:'3925', unit:'sq.ft', rate:280, stock:0, lowStock:10},
-];
+const defaultProducts = [];
 
 function cryptoId(){ return 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
 function fmtMoney(n){ n = Number(n)||0; return '₹' + n.toLocaleString('en-IN', {maximumFractionDigits:2, minimumFractionDigits:2}); }
@@ -325,6 +320,9 @@ async function boot(){
   DB.products = await storeGet(KEYS.products, null);
   if(!DB.products){ DB.products = defaultProducts; await storeSet(KEYS.products, DB.products); }
   DB.invoices = await storeGet(KEYS.invoices, []);
+
+  const navFootAddress = document.getElementById('navFootAddress');
+  if(navFootAddress) navFootAddress.textContent = DB.settings.address || '';
 
   document.getElementById('nav').addEventListener('click', (e)=>{
     const item = e.target.closest('.nav-item');
@@ -595,9 +593,9 @@ function renderLivePreview(d, t, pay){
     <div class="ip-head">
       <div class="ip-proprietor"><div class="pname">${s.proprietor}</div>PROPRIETOR</div>
       <div class="ip-logo">
-        <div class="kbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 3v18M4 12l10-9M4 12l10 9" stroke="#122A44" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="cname">KAVINAYAH<br>INDUSTRIES</div>
-        <div class="ctag">UPVC WINDOWS · DOORS · PARTITIONS</div>
+        <div class="kbox"><img src="./icon-192.png" style="width:100%;height:100%;object-fit:contain;border-radius:4px"></div>
+        <div class="cname">${s.companyName}</div>
+        <div class="ctag">${s.tagline}</div>
       </div>
       <div class="ip-phone">${s.phone}</div>
     </div>
@@ -639,10 +637,10 @@ function renderLivePreview(d, t, pay){
     <div class="ip-words"><b>Amount in Words:</b> ${amountInWords(t.total)}</div>
     <div class="ip-declare">Certified that the particulars given above are true and correct. This is a computer-generated invoice.</div>
     <div class="ip-sign">
-      <div class="signfor">For KAVINAYAH INDUSTRIES</div>
+      <div class="signfor">For ${s.companyName}</div>
       <div class="signline">Authorised Signatory</div>
     </div>
-    <div class="ip-foot">531, ONTHAPILLAI KAADU, NEAR KALIAMMAN KOVIL, KITCHIPALAYAM, SALEM-15</div>
+    <div class="ip-foot">${s.address}</div>
   </div>`;
 }
 
@@ -861,6 +859,9 @@ function renderSettings(){
         <div class="field"><label>Proprietor</label><input id="setProprietor" value="${s.proprietor}"></div>
       </div>
       <div class="grid-2">
+        <div class="field"><label>Tagline (shown on printed invoices)</label><input id="setTagline" value="${s.tagline||''}"></div>
+      </div>
+      <div class="grid-2">
         <div class="field"><label>Phone</label><input id="setPhone" value="${s.phone}"></div>
         <div class="field"><label>GSTIN</label><input id="setGstin" value="${s.gstin}" placeholder="Your business GSTIN"></div>
       </div>
@@ -1007,7 +1008,7 @@ function exportInvoicesCSV(){
   const blob = new Blob([csv], {type:'text/csv'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `kavinayah-invoices-${todayISO()}.csv`;
+  a.href = url; a.download = `jk-hardwares-invoices-${todayISO()}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
   showToast('CSV exported');
@@ -1120,7 +1121,7 @@ async function exportBackup(silent){
   const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `kavinayah-billing-backup-${todayISO()}.json`;
+  a.href = url; a.download = `jk-hardwares-billing-backup-${todayISO()}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
   DB.settings.lastBackupAt = new Date().toISOString();
@@ -1259,6 +1260,7 @@ async function deletePayment(invId, idx){
 
 async function saveSettings(){
   DB.settings.companyName = document.getElementById('setCompany').value;
+  DB.settings.tagline = document.getElementById('setTagline').value;
   DB.settings.proprietor = document.getElementById('setProprietor').value;
   DB.settings.phone = document.getElementById('setPhone').value;
   DB.settings.gstin = document.getElementById('setGstin').value;
@@ -1267,9 +1269,11 @@ async function saveSettings(){
   DB.settings.stateCode = document.getElementById('setStateCode').value;
   DB.settings.cgstRate = Number(document.getElementById('setCgst').value)||0;
   DB.settings.sgstRate = Number(document.getElementById('setSgst').value)||0;
-  DB.settings.invoicePrefix = document.getElementById('setPrefix').value || 'KI';
+  DB.settings.invoicePrefix = document.getElementById('setPrefix').value || 'JK';
   DB.settings.cloudBackupUrl = document.getElementById('setCloudUrl') ? document.getElementById('setCloudUrl').value.trim() : DB.settings.cloudBackupUrl;
   await storeSet(KEYS.settings, DB.settings);
+  const navFootAddress = document.getElementById('navFootAddress');
+  if(navFootAddress) navFootAddress.textContent = DB.settings.address || '';
   showToast('Settings saved');
 }
 
@@ -1278,7 +1282,23 @@ function printInvoice(){
   const printArea = document.getElementById('printArea');
   if(!preview || !printArea){ window.print(); return; }
   printArea.innerHTML = preview.outerHTML;
-  window.print();
+  // The logo <img> just got created fresh by the innerHTML assignment above --
+  // setting its src kicks off an async load that is NOT finished by the time
+  // this line runs. Calling window.print() immediately (the previous
+  // behavior) could open the print dialog before the browser has actually
+  // painted the logo, so the printed/PDF output shows a blank space where
+  // the logo should be even though it displays fine everywhere else on
+  // screen a moment later. Wait for it (or its failure) before printing.
+  const img = printArea.querySelector('img');
+  if(img && !img.complete){
+    let printed = false;
+    const go = () => { if(printed) return; printed = true; window.print(); };
+    img.addEventListener('load', go, {once:true});
+    img.addEventListener('error', go, {once:true}); // don't block printing forever if the logo fails to load
+    setTimeout(go, 800); // safety net in case neither event fires for some reason
+  } else {
+    window.print();
+  }
 }
 
 boot();
